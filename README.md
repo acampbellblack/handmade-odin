@@ -7,3 +7,5 @@ Changes:
 - No pointer arithmetic in Odin so I am indexing with multi-pointers instead.
 
 - Code is formatted using the OLS formatter.
+
+- Using VSCode build and debug scripts.
