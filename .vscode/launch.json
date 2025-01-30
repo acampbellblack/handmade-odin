@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug",
             "type": "cppvsdbg",
             "request": "launch",
             "preLaunchTask": "Build",
-            "name": "Debug",
             "program": "${workspaceRoot}/build/handmade-hero.exe",
             "cwd": "${workspaceRoot}",
         }
