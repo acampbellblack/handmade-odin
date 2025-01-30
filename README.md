@@ -13,7 +13,8 @@
 #### How to run:
 1. Clone the repository.
 2. Open in VSCode.
-3. Hit F5 or run the "Debug" configuration in the "Run and Debug" panel.
+3. Create a "build/" folder in the root of the repository.
+4. Hit F5 or run the "Debug" configuration in the "Run and Debug" panel.
 
 #### Requirements:
 - Windows
