@@ -18,11 +18,13 @@ Win32_Window_Dimension :: struct {
 	height: i32,
 }
 
-running: bool
+global_running: bool
 global_backbuffer: Win32_Offscreen_Buffer
 
 main :: proc() {
 	instance := win.HINSTANCE(win.GetModuleHandleW(nil))
+
+	win32_resize_dib_section(&global_backbuffer, 1280, 720)
 
 	window_class: win.WNDCLASSW = {
 		style         = win.CS_HREDRAW | win.CS_VREDRAW,
@@ -59,15 +61,15 @@ main :: proc() {
 	x_offset: i32
 	y_offset: i32
 
-	running = true
+	global_running = true
 
-	for running {
+	for global_running {
 		message: win.MSG
 
 		for win.PeekMessageW(&message, nil, 0, 0, win.PM_REMOVE) {
 
 			if message.message == win.WM_QUIT {
-				running = false
+				global_running = false
 			}
 
 			win.TranslateMessage(&message)
@@ -77,17 +79,13 @@ main :: proc() {
 		render_weird_gradient(global_backbuffer, x_offset, y_offset)
 
 		device_context := win.GetDC(window)
-		window_dimension := win32_get_window_dimension(window)
+		dimension := win32_get_window_dimension(window)
 
 		win32_display_buffer_in_window(
 			device_context,
-			window_dimension.width,
-			window_dimension.height,
+			dimension.width,
+			dimension.height,
 			global_backbuffer,
-			0,
-			0,
-			window_dimension.width,
-			window_dimension.height,
 		)
 		win.ReleaseDC(window, device_context)
 
@@ -107,22 +105,14 @@ win32_main_window_callback :: proc "stdcall" (
 	result: win.LRESULT
 
 	switch message {
-	case win.WM_SIZE:
-		window_dimension := win32_get_window_dimension(window)
-		win32_resize_dib_section(
-			&global_backbuffer,
-			window_dimension.width,
-			window_dimension.height,
-		)
-
 	case win.WM_CLOSE:
-		running = false
+		global_running = false
 
 	case win.WM_ACTIVATEAPP:
 		fmt.println("WM_ACTIVATEAPP")
 
 	case win.WM_DESTROY:
-		running = false
+		global_running = false
 
 	case win.WM_PAINT:
 		paint: win.PAINTSTRUCT
@@ -133,17 +123,13 @@ win32_main_window_callback :: proc "stdcall" (
 		width := paint.rcPaint.right - paint.rcPaint.left
 		height := paint.rcPaint.bottom - paint.rcPaint.top
 
-		window_dimension := win32_get_window_dimension(window)
+		dimension := win32_get_window_dimension(window)
 
 		win32_display_buffer_in_window(
 			device_context,
-			window_dimension.width,
-			window_dimension.height,
+			dimension.width,
+			dimension.height,
 			global_backbuffer,
-			x,
-			y,
-			width,
-			height,
 		)
 
 		win.EndPaint(window, &paint)
@@ -179,7 +165,7 @@ win32_resize_dib_section :: proc(buffer: ^Win32_Offscreen_Buffer, width, height:
 		bmiHeader = {
 			biSize = size_of(win.BITMAPINFOHEADER),
 			biWidth = buffer.width,
-			biHeight = buffer.height,
+			biHeight = -buffer.height,
 			biPlanes = 1,
 			biBitCount = 32,
 			biCompression = win.BI_RGB,
@@ -209,7 +195,6 @@ win32_display_buffer_in_window :: proc(
 	device_context: win.HDC,
 	window_width, window_height: i32,
 	buffer: Win32_Offscreen_Buffer,
-	x, y, width, height: i32,
 ) {
 	info := buffer.info
 
@@ -217,12 +202,12 @@ win32_display_buffer_in_window :: proc(
 		device_context,
 		0,
 		0,
-		buffer.width,
-		buffer.height,
-		0,
-		0,
 		window_width,
 		window_height,
+		0,
+		0,
+		buffer.width,
+		buffer.height,
 		buffer.memory,
 		&info,
 		win.DIB_RGB_COLORS,
