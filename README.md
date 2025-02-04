@@ -1,6 +1,8 @@
 # Handmade Odin
 ### A port of Handmade Hero to the Odin programming langauge.
 
+This is the first 5 days. I have stopped before XInput as this was a bit awkward to implement in Odin. I recommend using SDL for input instead.
+
 #### Changes
 - Using snake_case and Ada_Case instead of Casey's naming conventions to make it more conventional with other Odin programs.
 
