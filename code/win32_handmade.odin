@@ -58,6 +58,9 @@ main :: proc() {
 		return
 	}
 
+	// NOTE: since we specified ONWDC we can just get one device context and use it forever
+	device_context := win.GetDC(window)
+
 	x_offset: i32
 	y_offset: i32
 
@@ -78,7 +81,6 @@ main :: proc() {
 
 		render_weird_gradient(global_backbuffer, x_offset, y_offset)
 
-		device_context := win.GetDC(window)
 		dimension := win32_get_window_dimension(window)
 
 		win32_display_buffer_in_window(
@@ -87,7 +89,6 @@ main :: proc() {
 			dimension.height,
 			global_backbuffer,
 		)
-		win.ReleaseDC(window, device_context)
 
 		x_offset += 1
 		y_offset += 2
@@ -161,6 +162,7 @@ win32_resize_dib_section :: proc(buffer: ^Win32_Offscreen_Buffer, width, height:
 	buffer.height = height
 	buffer.bytes_per_pixel = 4
 
+	// NOTE: biHeight being negative is the clue to Windows that this is a top-down bitmap
 	buffer.info = {
 		bmiHeader = {
 			biSize = size_of(win.BITMAPINFOHEADER),
